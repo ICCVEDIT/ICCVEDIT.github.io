@@ -157,7 +157,7 @@ body {
 .interpolation-frame, 
 .interpolation-image-wrapper img {
   width: auto; /* 자동 크기 조정 */
-  max-width: 200px; /* 최대 너비 제한 */
+  max-width: 220px; /* 최대 너비 제한 */
   height: auto; /* 원본 비율 유지 */
   display: block;
   margin: 0 auto;
