@@ -1,78 +1,69 @@
 window.HELP_IMPROVE_VIDEOJS = false;
 
-var INTERP_BASE = "./static/interpolation/stacked";
-var NUM_INTERP_FRAMES = 240;
+var NUM_INTERP_FRAMES = 13;
 
 var interp_images = [];
 function preloadInterpolationImages() {
   for (var i = 0; i < NUM_INTERP_FRAMES; i++) {
-    var path = INTERP_BASE + '/' + String(i).padStart(6, '0') + '.jpg';
+    var path = INTERP_BASE + '/' + '${i}' + '.png';
     interp_images[i] = new Image();
     interp_images[i].src = path;
   }
 }
 
-function setInterpolationImage(i) {
+
+function setInterpolationImage(slider, i) {
   var image = interp_images[i];
   image.ondragstart = function() { return false; };
   image.oncontextmenu = function() { return false; };
-  $('#interpolation-image-wrapper').empty().append(image);
+
+  var wrapper = $(slider).closest(".interpolation-panel").find(".interpolation-image-wrapper");
+  wrapper.empty().append(image);
 }
 
 
 $(document).ready(function() {
-    // Check for click events on the navbar burger icon
-    $(".navbar-burger").click(function() {
-      // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-      $(".navbar-burger").toggleClass("is-active");
-      $(".navbar-menu").toggleClass("is-active");
+  $(".interpolation-panel").each(function() {
+      var panel = $(this);
+      var folder = panel.attr("data-folder"); 
+      var slider = panel.find(".interpolation-slider");
+      var wrapper = panel.find(".interpolation-image-wrapper");
 
-    });
+      // 폴더별 프레임 개수 지정
+      var folderFrameCounts = {
+          "morphed01": 13,
+          "morphed02": 10,
+          "morphed03": 10,
+          "morphed04": 13
+      };
 
-    var options = {
-			slidesToScroll: 1,
-			slidesToShow: 3,
-			loop: true,
-			infinite: true,
-			autoplay: false,
-			autoplaySpeed: 3000,
-    }
+      var NUM_INTERP_FRAMES = folderFrameCounts[folder] || 13; // 기본값 13
+      var interp_images = [];
 
-		// Initialize all div with carousel class
-    var carousels = bulmaCarousel.attach('.carousel', options);
+      for (var i = 0; i < NUM_INTERP_FRAMES; i++) {
+          var path = `./static/interpolation/${folder}/${i}.png`;
+          interp_images[i] = new Image();
+          interp_images[i].src = path;
+      }
 
-    // Loop on each carousel initialized
-    for(var i = 0; i < carousels.length; i++) {
-    	// Add listener to  event
-    	carousels[i].on('before:show', state => {
-    		console.log(state);
-    	});
-    }
+      function setInterpolationImage(i) {
+          if (interp_images[i]) {
+              var image = interp_images[i];
+              image.ondragstart = function() { return false; };
+              image.oncontextmenu = function() { return false; };
+              wrapper.empty().append(image);
+          } else {
+              wrapper.html("<p style='color:red;'>No frame available</p>");
+          }
+      }
 
-    // Access to bulmaCarousel instance of an element
-    var element = document.querySelector('#my-element');
-    if (element && element.bulmaCarousel) {
-    	// bulmaCarousel instance is available as element.bulmaCarousel
-    	element.bulmaCarousel.on('before-show', function(state) {
-    		console.log(state);
-    	});
-    }
+      setInterpolationImage(0);
+      slider.prop("max", NUM_INTERP_FRAMES - 1);
 
-    /*var player = document.getElementById('interpolation-video');
-    player.addEventListener('loadedmetadata', function() {
-      $('#interpolation-slider').on('input', function(event) {
-        console.log(this.value, player.duration);
-        player.currentTime = player.duration / 100 * this.value;
-      })
-    }, false);*/
-    preloadInterpolationImages();
+      slider.on("input", function() {
+          setInterpolationImage(this.value);
+      });
+  });
 
-    $('#interpolation-slider').on('input', function(event) {
-      setInterpolationImage(this.value);
-    });
-    setInterpolationImage(0);
-    $('#interpolation-slider').prop('max', NUM_INTERP_FRAMES - 1);
-
-    bulmaSlider.attach();
-
-})
+  bulmaSlider.attach();
+});
